@@ -1,0 +1,200 @@
+1, Massachusetts Institute of Technology (MIT)
+2, Stanford University
+3, Harvard University
+4, University of Oxford
+5, California Institute of Technology (Caltech)
+6, ETH Zurich (Swiss Federal Institute of Technology)
+7, University of Cambridge
+8, UCL (University College London)
+9, Imperial College London
+10, University of Chicago
+11=, Nanyang Technological University (NTU)
+11=, National University of Singapore (NUS)
+13, Princeton University
+14, Cornell University
+15, University of Pennsylvania
+16, Tsinghua University
+17, Yale University
+18=, Columbia University
+18=, Ecole Polytechnique Fédérale de Lausanne (EPFL)
+20, University of Edinburgh
+21, University of Michigan
+22=, Peking University
+22=, The University of Tokyo
+24, Johns Hopkins University
+25=, Duke University
+25=, University of Hong Kong (HKU)
+27, The University of Manchester
+28, University of California, Berkeley (UCB)
+29=, Australian National University (ANU)
+29=, University of Toronto
+31, Northwestern University
+32, The Hong Kong University of Science and Technology (HKUST)
+33=, King's College London (KCL)
+33=, Kyoto University
+35=, McGill University
+35=, University of California, Los Angeles (UCLA)
+37, Seoul National University (SNU)
+38, The University of Melbourne
+39, New York University (NYU)
+40, Fudan University
+41, KAIST - Korea Advanced Institute of Science and Technology
+42, The University of Sydney
+43, The University of New South Wales (UNSW)
+44, London School of Economics and Political Science (LSE)
+45, University of California, San Diego (UCSD)
+46, The Chinese University of Hong Kong (CUHK)
+47, The University of Queensland (UQ)
+48, Carnegie Mellon University
+49, University of Bristol
+50, Delft University of Technology
+51, University of British Columbia
+52, City University of Hong Kong
+53, Université PSL (Paris Sciences & Lettres)
+54, Zhejiang University
+55, Technische Universität München
+56, University of Wisconsin-Madison
+57, Brown University
+58=, Monash University
+58=, Tokyo Institute of Technology
+60=, Ecole Polytechnique
+60=, Shanghai Jiao Tong University
+62, The University of Warwick
+63, Ludwig-Maximilians-Universität München
+64, University of Amsterdam
+65, University of Texas at Austin
+66, Ruprecht-Karls-Universität Heidelberg
+67, University of Glasgow
+68, University of Washington
+69, National Taiwan University (NTU)
+70, Universiti Malaya (UM)
+71, Osaka University
+72=, Georgia Institute of Technology (Georgia Tech)
+74, Universidad de Buenos Aires
+75, University of Illinois at Urbana-Champaign
+76, University of Zurich
+77, Sorbonne University
+78=, Durham University
+78=, The University of Sheffield
+80, Katholieke Universiteit Leuven
+81, University of Birmingham
+81, University of Copenhagen
+82, Tohoku University
+83, Korea University
+83=, The University of Auckland
+84, Lomonosov Moscow State University
+85, Rice University
+86, The University of Western Australia (UWA)
+87, Pohang University of Science and Technology (POSTECH)
+89, University of Science and Technology of China
+90, University of North Carolina, Chapel Hill
+91, The Hong Kong Polytechnic University
+92, Lund University
+93=, Pennsylvania State University
+93=, University of Leeds
+95, Sungkyunkwan University
+96, The University of Nottingham
+97, University of Southampton
+98=, Boston University
+98=, KTH, Royal Institute of Technology
+100, University of St Andrews
+101, Ohio State University
+102, Eindhoven University of Technology
+103, Universidad Nacional Autónoma de México (UNAM)
+104=, University of California, Davis (UCD)
+104=, Yonsei University
+106, The University of Adelaide
+107, University of Helsinki
+108=, Trinity College Dublin (TCD)
+108=, Washington University in St. Louis
+110, University of Geneva
+111, Purdue University
+112, Technical University of Denmark
+113, University of Alberta
+114, University of Groningen
+115, Nagoya University
+116=, Universidade de São Paulo (USP)
+116=, Uppsala University
+118, Leiden University
+119, University of Oslo
+120=, Humboldt-Universität zu Berlin
+120=, Nanjing University
+120=, Utrecht University
+123, University of Bern
+124, KIT, Karlsruher Institut für Technologie
+125=, Chalmers University of Technology
+125, Wageningen University
+126, Queen Mary University of London (QMUL)
+127, Pontificia Universidad Católica de Chile
+128, Lancaster University
+129, University of Southern California
+130=, Freie Universität Berlin
+130=, University of Ghent
+132=, Hokkaido University
+132=, Kyushu University
+134, Aalto University
+135, University of California, Santa Barbara (UCSB)
+136, University of Maryland, College Park
+137, Université de Montréal
+138, Rheinisch-Westfälische Technische Hochschule Aachen
+139, CentraleSupélec
+140=, McMaster University
+140=, University of Pittsburgh
+140=, University of Technology Sydney (UTS)
+144, Michigan State University
+145, Aarhus University
+146, Newcastle University
+147, Technische Universität Berlin
+148, University of York
+149, Politecnico di Milano
+150, Hanyang University
+151, University of Basel
+152, Indian Institute of Technology Bombay (IITB)
+153, University of Lausanne
+154=, Cardiff University
+154=, Universität Wien
+156=, Emory University
+156=, University of Minnesota
+158, Tecnológico de Monterrey (ITESM)
+159, Universiti Putra Malaysia (UPM)
+160=, Ecole Normale Supérieure de Lyon
+160=, Universiti Kebangsaan Malaysia (UKM)
+162, Hebrew University of Jerusalem
+163=, University of Bergen
+163=, University of Exeter
+165=, Universitat de Barcelona (UB)
+165=, Universiti Sains Malaysia (USM)
+167, Case Western Reserve University
+167=, Université Catholique de Louvain (UCL)
+167=, University of Florida
+169=, Eberhard Karls Universität Tübingen
+169=, Universität Freiburg
+170=, University of Rochester
+172, University of Bath
+173=, National Tsing Hua University
+173=, Queen's University of Belfast
+173=, University of Waterloo
+176, University of Otago
+177=, Scuola Superiore Sant'Anna Pisa
+177=, Università di Bologna (UNIBO)
+179=, Technische Universität Dresden
+181, University of Liverpool
+182, Indian Institute of Technology Delhi (IITD)
+183, Erasmus University Rotterdam
+184, Indian Institute of Science (IISc) Bangalore
+185, University College Dublin (UCD)
+186=, King Abdul Aziz University (KAU)
+186=, University of Twente
+188, Universitat Autónoma de Barcelona
+189=, Texas A&M University
+189=, Universidad de Chile
+191, Stockholm University
+192=, Technische Universität Wien
+192=, Universidad Autónoma de Madrid
+194, University of Aberdeen
+195, Vrije Universiteit Brussel (VUB)
+197, Georg-August-Universität Göttingen
+198=, University of Cape Town
+198=, University of Virginia
+200=, Keio University
+200=, King Fahd University of Petroleum & Minerals (KFUPM)
