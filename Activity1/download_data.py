@@ -1,6 +1,8 @@
 import configparser
+import os
 from selenium import webdriver
 from dataclasses import dataclass
+
 
 @dataclass
 class Identity:
@@ -11,8 +13,9 @@ class Identity:
 
 def download_org_data(org: str, identity: Identity):
     profile = webdriver.FirefoxProfile()
-    profile.set_preference("browser.helperApps.neverAsk.saveToDisk","text/csv")
-    profile.set_preference("browser.download.dir", "/home/jacob/Projects/MachineLearningTechniques/Activity1/Data")
+    profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "text/csv")
+    dir_path = os.getcwd()
+    profile.set_preference("browser.download.dir", f"{dir_path}/Data")
     profile.set_preference("browser.download.folderList", 2)
 
     browser = webdriver.Firefox(firefox_profile=profile)
