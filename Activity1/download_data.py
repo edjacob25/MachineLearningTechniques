@@ -1,15 +1,43 @@
 import configparser
-from elsapy import elsclient
-from elsapy.elssearch import ElsSearch
+from selenium import webdriver
+from dataclasses import dataclass
 
-base_url = ""
+@dataclass
+class Identity:
+    username: str
+    last_name: str
+    pin: str
+
+
+def download_org_data(org: str, identity: Identity):
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference("browser.helperApps.neverAsk.saveToDisk","text/csv")
+    profile.set_preference("browser.download.dir", "/home/jacob/Projects/MachineLearningTechniques/Activity1/Data")
+    profile.set_preference("browser.download.folderList", 2)
+
+    browser = webdriver.Firefox(firefox_profile=profile)
+    try:
+        browser.get("http://0-www.scopus.com.millenium.itesm.mx/home.url")
+        browser.find_element_by_name("name").send_keys(identity.last_name)
+        browser.find_element_by_name("code").send_keys(identity.username)
+        browser.find_element_by_name("pin").send_keys(identity.pin)
+        browser.find_element_by_name("submit").click()
+        browser.find_element_by_id("affilSearchLink").click()
+        browser.find_element_by_id("affilName").send_keys(org)
+        browser.find_element_by_id("affilSearch").click()
+        browser.find_element_by_class_name("docTitle").click()
+        browser.find_element_by_id("export_results").click()
+        browser.find_element_by_class_name("exportButton").click()
+    finally:
+        browser.close()
+
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read("config.ini")
-
-    client = elsclient.ElsClient(config["KEYS"]["elsevier_apikey"])
-
-    aff_srch = ElsSearch('affil(amsterdam)', 'affiliation')
-    aff_srch.execute(client)
-    print("aff_srch has", len(aff_srch.results), "results.")
+    identity = Identity(config["IDENTITY"]["username"], config["IDENTITY"]["last_name"], config["IDENTITY"]["pin"])
+    download_org_data("MIT", identity)
+    
+    #aff_srch = ElsSearch('affil(amsterdam)', 'affiliation')
+    #aff_srch.execute(client)
+    #print("aff_srch has", len(aff_srch.results), "results.")
