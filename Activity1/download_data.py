@@ -1,7 +1,9 @@
 import configparser
 import os
-from selenium import webdriver
 from dataclasses import dataclass
+from selenium import webdriver
+from selenium.common.exceptions import ElementClickInterceptedException
+
 
 
 @dataclass
@@ -25,9 +27,17 @@ def download_org_data(org: str, identity: Identity):
         browser.find_element_by_name("code").send_keys(identity.username)
         browser.find_element_by_name("pin").send_keys(identity.pin)
         browser.find_element_by_name("submit").click()
-        browser.find_element_by_id("affilSearchLink").click()
-        browser.find_element_by_id("affilName").send_keys(org)
-        browser.find_element_by_id("affilSearch").click()
+        try:
+            browser.find_element_by_id("affilSearchLink").click()
+            browser.find_element_by_id("affilName").send_keys(org)
+            browser.find_element_by_id("affilSearch").click()
+        except ElementClickInterceptedException:
+            browser.find_element_by_xpath("//a[@pendo-id='Continue as guest']").click()
+            browser.find_element_by_id("affilSearchLink").click()
+            browser.find_element_by_id("affilName").clear()
+            browser.find_element_by_id("affilName").send_keys(org)
+            browser.find_element_by_id("affilSearch").click()
+
         browser.find_element_by_class_name("docTitle").click()
         browser.find_element_by_id("export_results").click()
         browser.find_element_by_class_name("exportButton").click()
