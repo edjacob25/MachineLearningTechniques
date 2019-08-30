@@ -49,8 +49,13 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read("config.ini")
     identity = Identity(config["IDENTITY"]["username"], config["IDENTITY"]["last_name"], config["IDENTITY"]["pin"])
-    download_org_data("MIT", identity)
-    
-    #aff_srch = ElsSearch('affil(amsterdam)', 'affiliation')
-    #aff_srch.execute(client)
-    #print("aff_srch has", len(aff_srch.results), "results.")
+    filename = "Data/2019-QS-World-University-Rankings.txt"
+    universities = []
+    with open(filename, "r") as file:
+        for line in file:
+            universities.append(line.split(", ")[-1].strip())
+
+    for univ in universities:
+        pass
+        # download_org_data(univ, identity)
+    download_org_data("HARVARD UNIVERSITY", identity)
