@@ -62,7 +62,7 @@ def get_scival_info(apikey: str, elsevier_id: str):
                "CollaborationImpact", "FieldWeightedCitationImpact", "PublicationsInTopJournalPercentiles",
                "OutputsInTopCitationPercentiles"]
 
-    with open(f"request_{elsevier_id}.json", "w") as file:
+    with open(f"Data/request_{elsevier_id}.json", "w") as file:
         params = {"metricTypes": ",".join(metrics), "institutionIds": elsevier_id, "yearRange": "10yrs",
                   "includeSelfCitations": "true", "byYear": "true", "includedDocs": "AllPublicationTypes",
                   "journalImpactType": "CiteScore", "showAsFieldWeighted": "false", "indexType": "hIndex"}
