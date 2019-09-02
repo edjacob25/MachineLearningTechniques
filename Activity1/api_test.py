@@ -73,6 +73,7 @@ def get_scival_info(apikey: str, elsevier_id: str):
             result = r.json()["results"][0]["metrics"]
             file.write(json.dumps(result))
         sleep(1)
+    return result
 
 
 if __name__ == '__main__':
@@ -85,5 +86,17 @@ if __name__ == '__main__':
         print("Auth")
     except KeyError:
         token = authorize(apikey)
-    institution_search(apikey, "Harvard University", token)
-    # search(apikey, token)
+        print(token)
+
+    filename = "Data/2019-QS-World-University-Rankings.txt"
+    with open(filename, "r") as file:
+        for line in file:
+            uni = line.split(", ")[-1].strip()
+            try:
+                possible_institutions = institution_search(apikey, uni, token)
+                data = get_scival_info(apikey, possible_institutions[0].elsevier_id)
+            except IndexError:
+                print(f"University {uni} could not be found")
+
+    #possible_institutions = institution_search(apikey, "Harvard University", token)
+    #data = get_scival_info(apikey, possible_institutions[0].elsevier_id)
