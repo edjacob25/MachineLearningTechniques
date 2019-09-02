@@ -8,7 +8,8 @@ def authorize(apikey: str) -> str:
     headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
-        return r.json()["authtoken"]
+        print(r.json())
+        return r.json()["authenticate-response"]["authtoken"]
     else:
         raise Exception("authorization error")
 
@@ -38,9 +39,10 @@ if __name__ == '__main__':
     config.read("config.ini")
 
     apikey = config["SECRETS"]["elsevier_apikey"]
-    token = config["SECRETS"]["elsevier_authtoken"]
-    if not token:
+    try:
+        token = config["SECRETS"]["elsevier_authtoken"]
         print("Auth")
+    except KeyError:
         token = authorize(apikey)
     institution_search(apikey, "Harvard University", token)
     # search(apikey, token)
