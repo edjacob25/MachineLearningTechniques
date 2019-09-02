@@ -1,6 +1,19 @@
 import configparser
 import json
 import requests
+from dataclasses import dataclass
+from itertools import zip_longest
+from time import sleep
+from typing import List
+
+
+@dataclass
+class Institution:
+    elsevier_id: str
+    name: str
+    uri: str
+    country: str
+    country_code: str
 
 
 def authorize(apikey: str) -> str:
@@ -25,13 +38,41 @@ def search(apikey: str, token: str):
     print(r.json())
 
 
-def institution_search(apikey: str, inst: str, token: str):
+def institution_search(apikey: str, inst: str, token: str) -> List[Institution]:
     url = " https://api.elsevier.com/metrics/institution/search"
     headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
     payload = {"query": f"name({inst})"}
     r = requests.get(url, headers=headers, params=payload)
     print(r.status_code)
     print(r.json())
+    options = []
+    for result in r.json()["results"]:
+        institution = Institution(result["id"], result["name"], result["uri"], result["country"], result["countryCode"])
+        options.append(institution)
+    return options
+
+
+def get_scival_info(apikey: str, elsevier_id: str):
+    print(elsevier_id)
+    url = "https://api.elsevier.com/analytics/scival/institution/metrics"
+    headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
+
+    metrics = ["ScholarlyOutput", "CitedPublications", "AcademicCorporateCollaboration",
+               "AcademicCorporateCollaborationImpact", "Collaboration", "CitationCount", "CitationsPerPublication",
+               "CollaborationImpact", "FieldWeightedCitationImpact", "PublicationsInTopJournalPercentiles",
+               "OutputsInTopCitationPercentiles"]
+
+    with open(f"request_{elsevier_id}.json", "w") as file:
+        params = {"metricTypes": ",".join(metrics), "institutionIds": elsevier_id, "yearRange": "10yrs",
+                  "includeSelfCitations": "true", "byYear": "true", "includedDocs": "AllPublicationTypes",
+                  "journalImpactType": "CiteScore", "showAsFieldWeighted": "false", "indexType": "hIndex"}
+        r = requests.get(url, headers=headers, params=params)
+        if r.status_code == 200:
+            print(r.status_code)
+            print(r.text)
+            result = r.json()["results"][0]["metrics"]
+            file.write(json.dumps(result))
+        sleep(1)
 
 
 if __name__ == '__main__':
