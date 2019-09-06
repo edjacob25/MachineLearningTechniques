@@ -49,24 +49,25 @@ for name in new:
     df = df.drop(['{}_metricType'.format(name)], axis=1)
 
 names = list(df.columns)
-print(names)
-count = 0
+names2 = list(names)
 
-new2 = []
 for name in new:
     for j in range(4,len(names)):
-        if '{}_values_'.format(name) and not'ByYear' in names[j]:
-            count +=1
+        if '{}_values_'.format(name) in names[j] and not'ByYear' in names[j]:
+            print('names:',names[j])
             value = df.at[0, names[j]]
             value = str(value)
-            value = value.replace('Academic-corporate collaboration','ACC')
+            value = value.replace(' ','')
             print(value)
-            print('{}_values_'.format(name))
-            names[j] = re.sub(r'values_.', value, names[j])
+        if '{}_values_'.format(name) in names[j]:
+            names[j] = re.sub(r'values_.', str(value), names[j])
 
-print(len(new2))
-print(new2)
-print(count)
+print(names)
 
+for i in range(len(names)):
+    df = df.rename(columns={names2[i]: names[i]})
 
-#df.to_csv('/Users/jesusllanogarcia/Desktop/Projecto/universities_data-uri2.csv')
+df = df[df.columns.drop(list(df.filter(regex='_collabType$')))]
+df = df[df.columns.drop(list(df.filter(regex='_threshold')))]
+
+df.to_csv('/Users/jesusllanogarcia/Desktop/Projecto/universities_data-uri2.csv')
