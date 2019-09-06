@@ -92,18 +92,8 @@ def decide(institutions: List[Institution]) -> str:
     res = input("Choose one: ")
     return res
 
-if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read("config.ini")
 
-    apikey = config["SECRETS"]["elsevier_apikey"]
-    try:
-        token = config["SECRETS"]["elsevier_authtoken"]
-        print("Auth")
-    except KeyError:
-        token = authorize(apikey)
-        print(token)
-
+def search_and_create_institutions(apikey: str):
     filename = "Data/2019-QS-World-University-Rankings.txt"
     with open(filename, "r") as file:
         for rank, line in enumerate(file):
@@ -155,5 +145,14 @@ if __name__ == '__main__':
                     not_found.write(f"{uni}\n")
                 print(f"University {uni} could not be found")
 
-    #possible_institutions = institution_search(apikey, "Harvard University", token)
-    #data = get_scival_info(apikey, possible_institutions[0].elsevier_id)
+
+if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
+    apikey = config["SECRETS"]["elsevier_apikey"]
+
+    print("Choose an option")
+    search_and_create_institutions(apikey)
+    # possible_institutions = institution_search(apikey, "Harvard University", token)
+    # data = get_scival_info(apikey, possible_institutions[0].elsevier_id)
