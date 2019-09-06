@@ -28,7 +28,7 @@ def authorize(apikey: str) -> str:
         raise Exception("authorization error")
 
 
-def search(apikey: str, token: str):
+def search(apikey: str):
     url = "https://api.elsevier.com/content/search/scopus"
     headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
     payload = {"query": "ALL(MIT)"}
@@ -36,9 +36,9 @@ def search(apikey: str, token: str):
     print(r.status_code)
     results = r.json()["search-results"]
     print(len(results["entry"]))
-    
 
-def institution_search(apikey: str, inst: str, token: str) -> List[Institution]:
+
+def institution_search(apikey: str, inst: str) -> List[Institution]:
     url = "https://api.elsevier.com/metrics/institution/search"
     headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
     payload = {"query": f"name({inst})"}
@@ -49,7 +49,8 @@ def institution_search(apikey: str, inst: str, token: str) -> List[Institution]:
         options.append(institution)
     return options
 
-def institution_group_search(apikey: str, inst: str, token: str) -> List[Institution]:
+
+def institution_group_search(apikey: str, inst: str) -> List[Institution]:
     url = "https://api.elsevier.com/analytics/scival/institutionGroup/search"
     headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
     payload = {"query": f"name({inst})"}
@@ -84,7 +85,8 @@ def get_scival_info(apikey: str, inst: Institution, rank: int):
         sleep(1)
     return result
 
-def decide(institutions: List[Institution]) -> int:
+
+def decide(institutions: List[Institution]) -> str:
     for i, institution in enumerate(institutions):
         print(f"{i}: {institution.name}")
     res = input("Choose one: ")
@@ -110,12 +112,12 @@ if __name__ == '__main__':
             uni = uni.replace("(", "")
             uni = uni.replace(")", "")
             try:
-                possible_institutions = institution_search(apikey, uni, token)
+                possible_institutions = institution_search(apikey, uni)
                 if len(possible_institutions) > 1:
                     print(f"To decide about: {uni}")
                     chosen = decide(possible_institutions)
                     if chosen == "s":
-                        groups = institution_group_search(apikey, uni, token)
+                        groups = institution_group_search(apikey, uni)
                         possible_institutions.extend(groups)
                         chosen = decide(possible_institutions)
                     if chosen == "a":
@@ -132,9 +134,9 @@ if __name__ == '__main__':
                         print(f"Institution {uni} not found, change the text")
                         a = input("New text: ")
                         print(f"New text is {a}")
-                        new_options = institution_search(apikey, a, token)
-                        new_options.extend(institution_group_search(apikey, a, token))
-                        #print(new_options)
+                        new_options = institution_search(apikey, a)
+                        new_options.extend(institution_group_search(apikey, a))
+                        # print(new_options)
                         chosen = int(decide(new_options))
                         if chosen == -1:
                             pass
