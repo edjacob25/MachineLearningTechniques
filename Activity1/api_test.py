@@ -1,26 +1,17 @@
-import configparser
 import json
 import requests
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-from itertools import zip_longest
+from common import Institution, get_secret
 from time import sleep
 from typing import List
 
 
-@dataclass
-@dataclass_json
-class Institution:
-    elsevier_id: str
-    name: str
-    uri: str
-    country: str
-    country_code: str
+def default_headers(api_key: str) -> dict:
+    return {"X-ELS-APIKey": api_key, "Accept": "application/json"}
 
 
-def authorize(apikey: str) -> str:
+def authorize(api_key: str) -> str:
     url = "http://api.elsevier.com/authenticate?platform=SCOPUS"
-    headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
+    headers = default_headers(api_key)
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
         return r.json()["authenticate-response"]["authtoken"]
@@ -28,9 +19,9 @@ def authorize(apikey: str) -> str:
         raise Exception("authorization error")
 
 
-def search(apikey: str):
+def search(api_key: str):
     url = "https://api.elsevier.com/content/search/scopus"
-    headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
+    headers = default_headers(api_key)
     payload = {"query": "ALL(MIT)"}
     r = requests.get(url, headers=headers, params=payload)
     print(r.status_code)
@@ -38,9 +29,9 @@ def search(apikey: str):
     print(len(results["entry"]))
 
 
-def institution_search(apikey: str, inst: str) -> List[Institution]:
+def institution_search(api_key: str, inst: str) -> List[Institution]:
     url = "https://api.elsevier.com/metrics/institution/search"
-    headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
+    headers = default_headers(api_key)
     payload = {"query": f"name({inst})"}
     r = requests.get(url, headers=headers, params=payload)
     options = []
@@ -50,9 +41,9 @@ def institution_search(apikey: str, inst: str) -> List[Institution]:
     return options
 
 
-def institution_group_search(apikey: str, inst: str) -> List[Institution]:
+def institution_group_search(api_key: str, inst: str) -> List[Institution]:
     url = "https://api.elsevier.com/analytics/scival/institutionGroup/search"
-    headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
+    headers = default_headers(api_key)
     payload = {"query": f"name({inst})"}
     r = requests.get(url, headers=headers, params=payload)
     options = []
@@ -61,10 +52,10 @@ def institution_group_search(apikey: str, inst: str) -> List[Institution]:
         options.append(institution)
     return options
 
-def get_scival_info(apikey: str, inst: Institution, rank: int):
-    print(inst.elsevier_id)
+
+def get_scival_info(api_key: str, inst: Institution, rank: int):
     url = "https://api.elsevier.com/analytics/scival/institution/metrics"
-    headers = {"X-ELS-APIKey": apikey, "Accept": "application/json"}
+    headers = default_headers(api_key)
 
     metrics = ["ScholarlyOutput", "CitedPublications", "AcademicCorporateCollaboration",
                "AcademicCorporateCollaborationImpact", "Collaboration", "CitationCount", "CitationsPerPublication",
@@ -93,7 +84,7 @@ def decide(institutions: List[Institution]) -> str:
     return res
 
 
-def search_and_create_institutions(apikey: str):
+def search_and_create_institutions(api_key: str):
     filename = "Data/2019-QS-World-University-Rankings.txt"
     with open(filename, "r") as file:
         for rank, line in enumerate(file):
@@ -102,12 +93,12 @@ def search_and_create_institutions(apikey: str):
             uni = uni.replace("(", "")
             uni = uni.replace(")", "")
             try:
-                possible_institutions = institution_search(apikey, uni)
+                possible_institutions = institution_search(api_key, uni)
                 if len(possible_institutions) > 1:
                     print(f"To decide about: {uni}")
                     chosen = decide(possible_institutions)
                     if chosen == "s":
-                        groups = institution_group_search(apikey, uni)
+                        groups = institution_group_search(api_key, uni)
                         possible_institutions.extend(groups)
                         chosen = decide(possible_institutions)
                     if chosen == "a":
@@ -118,14 +109,14 @@ def search_and_create_institutions(apikey: str):
                         continue
                     chosen = int(chosen)
                     print(f"{uni} -> {possible_institutions[chosen].name}")
-                    data = get_scival_info(apikey, possible_institutions[chosen], rank)
+                    data = get_scival_info(api_key, possible_institutions[chosen], rank)
                 elif len(possible_institutions) == 0:
                     while (1):
                         print(f"Institution {uni} not found, change the text")
                         a = input("New text: ")
                         print(f"New text is {a}")
-                        new_options = institution_search(apikey, a)
-                        new_options.extend(institution_group_search(apikey, a))
+                        new_options = institution_search(api_key, a)
+                        new_options.extend(institution_group_search(api_key, a))
                         # print(new_options)
                         chosen = int(decide(new_options))
                         if chosen == -1:
@@ -134,12 +125,12 @@ def search_and_create_institutions(apikey: str):
                             break
                         else:
                             print(f"{uni} -> {new_options[chosen].name}")
-                            data = get_scival_info(apikey, new_options[chosen], rank)
+                            data = get_scival_info(api_key, new_options[chosen], rank)
                             break
 
                 else:
                     print(f"{uni} -> {possible_institutions[0].name}")
-                    data = get_scival_info(apikey, possible_institutions[0], rank)
+                    data = get_scival_info(api_key, possible_institutions[0], rank)
             except IndexError:
                 with open("Data/NotFound.txt", "a+") as not_found:
                     not_found.write(f"{uni}\n")
@@ -147,12 +138,7 @@ def search_and_create_institutions(apikey: str):
 
 
 if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-
-    apikey = config["SECRETS"]["elsevier_apikey"]
-
-    print("Choose an option")
-    search_and_create_institutions(apikey)
+    key = get_secret("elsevier_apikey")
+    search_and_create_institutions(key)
     # possible_institutions = institution_search(apikey, "Harvard University", token)
     # data = get_scival_info(apikey, possible_institutions[0].elsevier_id)
