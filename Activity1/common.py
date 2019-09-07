@@ -19,11 +19,18 @@ class Institution:
 def get_secret(name: str, file="config.ini"):
     config = ConfigParser()
     config.read(file)
-    return config["SECRETS"][str]
+    return config["SECRETS"][name]
 
 
 def load_institutions() -> List[Institution]:
-    for item in os.listdir("Data/Scival"):
-        dic = json.load(item)
-        print(f"{dic['elsevier_id']} - {dic['name']}")
-    return []
+    files = os.listdir("Data/Scival")
+    files = [x for x in files if x.endswith("json")]
+    files.sort(key=lambda x: int(x.split("_")[0]))
+    institutions = []
+    for item in files:
+        with open(f"Data/Scival/{item}", "r") as file:
+            dic = json.load(file)
+        #print(f"{dic['elsevier_id']} - {dic['name']}")
+        institution = Institution(dic['elsevier_id'], dic['name'], None, None, None)
+        institutions.append(institution)
+    return institutions

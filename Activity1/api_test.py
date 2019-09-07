@@ -1,8 +1,22 @@
 import json
+import os
 import requests
-from common import Institution, get_secret
+from common import Institution, get_secret, load_institutions
 from time import sleep
 from typing import List
+
+
+def save_results(institution: Institution, rank: int, data: dict, directory="Scival", doc: str = None, topic=False):
+    if not os.path.lexists(f"Data/{directory}"):
+        os.mkdir(f"Data/{directory}")
+    if doc is None:
+        filepath = f"Data/{directory}/{rank}_{institution.name}_{institution.elsevier_id}.json"
+    elif topic:
+        filepath = f"Data/{directory}/{rank}_{institution.name}_{institution.elsevier_id}_topics.json"
+    else:
+        filepath = f"Data/{directory}/{rank}_{institution.name}_{institution.elsevier_id}_{doc}.json"
+    with open(filepath, "w") as file:
+        file.write(json.dumps(data))
 
 
 def default_headers(api_key: str) -> dict:
@@ -53,7 +67,7 @@ def institution_group_search(api_key: str, inst: str) -> List[Institution]:
     return options
 
 
-def get_scival_info(api_key: str, inst: Institution, rank: int):
+def get_scival_info(api_key: str, inst: Institution, rank: int, docs="AllPublicationTypes"):
     url = "https://api.elsevier.com/analytics/scival/institution/metrics"
     headers = default_headers(api_key)
 
@@ -62,18 +76,41 @@ def get_scival_info(api_key: str, inst: Institution, rank: int):
                "CollaborationImpact", "FieldWeightedCitationImpact", "PublicationsInTopJournalPercentiles",
                "OutputsInTopCitationPercentiles"]
 
-    with open(f"Data/Scival/{rank}_{inst.name}_{inst.elsevier_id}.json", "w") as file:
-        params = {"metricTypes": ",".join(metrics), "institutionIds": inst.elsevier_id, "yearRange": "10yrs",
-                  "includeSelfCitations": "true", "byYear": "true", "includedDocs": "AllPublicationTypes",
-                  "journalImpactType": "CiteScore", "showAsFieldWeighted": "false", "indexType": "hIndex"}
-        r = requests.get(url, headers=headers, params=params)
-        if r.status_code == 200:
-            print(r.status_code)
-            result = r.json()["results"][0]["metrics"]
-            entity = inst.to_dict()
-            entity["metrics"] = result
-            file.write(json.dumps(entity))
-        sleep(1)
+    params = {"metricTypes": ",".join(metrics), "institutionIds": inst.elsevier_id, "yearRange": "10yrs",
+              "includeSelfCitations": "true", "byYear": "true", "includedDocs": docs,
+              "journalImpactType": "CiteScore", "showAsFieldWeighted": "false", "indexType": "hIndex"}
+    r = requests.get(url, headers=headers, params=params)
+    if r.status_code == 200:
+        print(r.status_code)
+        result = r.json()["results"][0]["metrics"]
+        entity = inst.to_dict()
+        entity["metrics"] = result
+        if docs == "AllPublicationTypes":
+            save_results(inst, rank, entity)
+        else:
+            save_results(inst, rank, entity, doc=docs, directory="ScivalArticles")
+    else:
+        result = {"Error": f"{r.status_code} -> {r.text}"}
+        print(result)
+    sleep(1)
+    return result
+
+
+def get_topics_info(api_key: str, inst: Institution, rank: int):
+    url = f"https://api.elsevier.com/analytics/scival/topicCluster/institutionId/{inst.elsevier_id}"
+    headers = default_headers(api_key)
+
+    r = requests.get(url, headers=headers)
+    if r.status_code == 200:
+        print(r.status_code)
+        result = r.json()["topicClusters"]
+        entity = inst.to_dict()
+        entity["topics"] = result
+        save_results(inst, rank, entity, directory="ScivalTopics", topic=True)
+    else:
+        result = {"Error": f"{r.status_code} -> {r.text}"}
+        print(result)
+    sleep(1)
     return result
 
 
@@ -137,8 +174,25 @@ def search_and_create_institutions(api_key: str):
                 print(f"University {uni} could not be found")
 
 
+def get_article_statistics(api_key: str):
+    document_types = ["ArticlesOnly", "ArticlesReviews", "ArticlesReviewsConferencePapers", "ArticlesReviewsEditorials",
+                      "ArticlesReviewsEditorialsShortSurveys", "ConferencePapersOnly", "ArticlesConferencePapers",
+                      "BooksAndBookChapters"]
+    institutions = load_institutions()
+    for i, institution in enumerate(institutions):
+        for doc in document_types:
+            print(f"Getting {doc} for {i} {institution.name}")
+            get_scival_info(api_key, institution, i, doc)
+
+
+def get_topics(api_key: str):
+    institutions = load_institutions()
+    for i, institution in enumerate(institutions):
+        print(f"Getting topics for {i} {institution.name}")
+        get_topics_info(api_key, institution, i)
+
+
 if __name__ == '__main__':
     key = get_secret("elsevier_apikey")
-    search_and_create_institutions(key)
-    # possible_institutions = institution_search(apikey, "Harvard University", token)
-    # data = get_scival_info(apikey, possible_institutions[0].elsevier_id)
+    # search_and_create_institutions(key)
+    get_topics(api_key=key)
