@@ -5,7 +5,6 @@ from selenium import webdriver
 from selenium.common.exceptions import ElementClickInterceptedException
 
 
-
 @dataclass
 class Identity:
     username: str

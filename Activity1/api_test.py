@@ -148,7 +148,7 @@ def search_and_create_institutions(api_key: str):
                     print(f"{uni} -> {possible_institutions[chosen].name}")
                     data = get_scival_info(api_key, possible_institutions[chosen], rank)
                 elif len(possible_institutions) == 0:
-                    while (1):
+                    while True:
                         print(f"Institution {uni} not found, change the text")
                         a = input("New text: ")
                         print(f"New text is {a}")

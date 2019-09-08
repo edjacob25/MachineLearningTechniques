@@ -30,7 +30,7 @@ def load_institutions() -> List[Institution]:
     for item in files:
         with open(f"Data/Scival/{item}", "r") as file:
             dic = json.load(file)
-        #print(f"{dic['elsevier_id']} - {dic['name']}")
+        # print(f"{dic['elsevier_id']} - {dic['name']}")
         institution = Institution(dic['elsevier_id'], dic['name'], None, None, None)
         institutions.append(institution)
     return institutions
