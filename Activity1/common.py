@@ -1,4 +1,5 @@
 import json
+import re
 import os
 from configparser import ConfigParser
 from dataclasses import dataclass
@@ -34,3 +35,8 @@ def load_institutions() -> List[Institution]:
         institution = Institution(dic['elsevier_id'], dic['name'], None, None, None)
         institutions.append(institution)
     return institutions
+
+
+def camel_case_to_snake_case(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
