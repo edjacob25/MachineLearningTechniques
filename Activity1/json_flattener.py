@@ -1,4 +1,4 @@
-#First the flatten_json package needs to be installed.
+# First the flatten_json package needs to be installed.
 from json import load
 from csv import writer
 from os import listdir
@@ -24,7 +24,7 @@ df = pd.DataFrame(dic_flattened)
 
 df = df.drop(['uri'], axis=1)
 
-#save the headers in a variable as a list.
+# save the headers in a variable as a list.
 names = list(df.columns)
 names2 = list(names)
 
@@ -36,6 +36,10 @@ for i in range(11):
             new.append(df.at[0, names[j]])
 
 # Change the names so they include the metric.
+count = 0
+for name in new:
+    print('{%i:' % count + str(name) + '}')
+    count += 1
 for i in range(11):
     for j in range(len(names)):
         if 'metrics_%d_' % i in names[j]:
@@ -52,12 +56,12 @@ names = list(df.columns)
 names2 = list(names)
 
 for name in new:
-    for j in range(4,len(names)):
-        if '{}_values_'.format(name) in names[j] and not'ByYear' in names[j]:
-            print('names:',names[j])
+    for j in range(4, len(names)):
+        if '{}_values_'.format(name) in names[j] and not 'ByYear' in names[j]:
+            print('names:', names[j])
             value = df.at[0, names[j]]
             value = str(value)
-            value = value.replace(' ','')
+            value = value.replace(' ', '')
             print(value)
         if '{}_values_'.format(name) in names[j]:
             names[j] = re.sub(r'values_.', str(value), names[j])
@@ -67,7 +71,15 @@ print(names)
 for i in range(len(names)):
     df = df.rename(columns={names2[i]: names[i]})
 
+collabtypes = df.filter(regex='_collabType$')
+collabtypes = collabtypes.vexalues
+print(collabtypes[1])
 df = df[df.columns.drop(list(df.filter(regex='_collabType$')))]
 df = df[df.columns.drop(list(df.filter(regex='_threshold')))]
+df = df[df.columns.drop(list(df.filter(regex='_2009')))]
+dr = df[df.columns.drop(list(df.filter(regex='_impactType')))]
+
+for i in range(10, 14):
+    df = df[df.columns.drop(list(df.filter(regex='_20{}'.format(i))))]
 
 df.to_csv('/Users/jesusllanogarcia/Desktop/Projecto/universities_data-uri2.csv')
