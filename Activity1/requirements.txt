@@ -3,3 +3,5 @@ elsapy>=0.5.0
 pandas>=0.25.0
 requests>=2.22.0
 openpyxl>=2.6.3
+dataclasses_json
+flatten_json
