@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
-from openpyxl import load_workbook
 from os import path
+
+from openpyxl import load_workbook
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Converts excel QS World University Rankings file to a simple txt file")
@@ -19,6 +20,5 @@ if __name__ == '__main__':
     with open(new_filename, "w") as wfile:
         for i in range(6, 206):
             name = sheet.cell(row=i, column=3).value.strip()
-            position = str(sheet.cell(row=i, column=1).value) \
-                .strip()
+            position = str(sheet.cell(row=i, column=1).value).strip()
             wfile.write(f"{position}, {name}\n")
