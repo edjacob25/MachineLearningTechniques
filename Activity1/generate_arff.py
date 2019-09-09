@@ -119,6 +119,50 @@ def create_data_specific() -> pd.DataFrame:
     return pd.DataFrame(rows, columns=headers)
 
 
+def convert_topic_name(topic: dict) -> str:
+    return topic["name"].replace("; ", "_").replace(" ", "")
+
+
+def create_topic_headers() -> List[str]:
+    headers = []
+    # atts = ["prominencePercentile", "scholarlyOutput", "topicCount", "overallScholarlyOutput"]
+    atts = ["scholarlyOutput"]
+    files = os.listdir("Data/ScivalTopics")
+    files.sort(key=lambda x: int(x.split("_", 1)[0]))
+    for filename in files:
+        file_path = os.path.join("Data/ScivalTopics", filename)
+        with open(file_path, "r") as file:
+            data = json.load(file)
+            for topic in data["topics"]:
+                name = convert_topic_name(topic)
+                for att in atts:
+                    header_name = f"{name}_{att}"
+                    if header_name not in headers:
+                        headers.append(header_name)
+    return headers
+
+
+def create_topic_info() -> pd.DataFrame:
+    headers = create_topic_headers()
+    # atts = ["prominencePercentile", "scholarlyOutput", "topicCount", "overallScholarlyOutput"]
+    atts = ["scholarlyOutput"]
+    files = os.listdir("Data/ScivalTopics")
+    files.sort(key=lambda x: int(x.split("_", 1)[0]))
+    df = pd.DataFrame(columns=headers)
+    for filename in files:
+        file_path = os.path.join("Data/ScivalTopics", filename)
+        with open(file_path, "r") as file:
+            data = json.load(file)
+            serie = pd.Series(index=headers)
+            for topic in data["topics"]:
+                name = convert_topic_name(topic)
+                for att in atts:
+                    header_name = f"{name}_{att}"
+                    serie[header_name] = topic[att]
+            df = df.append(serie, ignore_index=True)
+    return df
+
+
 def write_arff_file(dataset: pd.DataFrame, filename="dataset.arff", name="Universities"):
     with open(filename, "w", encoding="utf-8") as file:
         file.write(f"@RELATION {name}\n\n")
@@ -134,24 +178,28 @@ def write_arff_file(dataset: pd.DataFrame, filename="dataset.arff", name="Univer
 
         for _, row in dataset.iterrows():
             items = [str(x) for x in row]
+            items = [x if x != "nan" else "?" for x in items]
             file.write(f"{', '.join(items)}\n")
 
 
 def main():
     dataset = create_main_dataset()
-    print(dataset)
+    # print(dataset)
 
     new_dataset = create_data_specific()
-    print(new_dataset)
+    # print(new_dataset)
 
-    total = pd.concat([dataset, new_dataset], axis=1)
-    print(total)
+    topics_dataset = create_topic_info()
+    # print(topics_dataset)
+
+    total = pd.concat([dataset, new_dataset, topics_dataset], axis=1)
+    # print(total)
 
     pattern = re.compile(".*_(2009|2010|2011|2012|2013)")
     columns_to_drop = [x for x in total.columns if pattern.match(x)]
     # print(columns_to_drop)
     total = total.drop(columns=columns_to_drop)
-    print(total)
+    # print(total)
     write_arff_file(total)
 
 
