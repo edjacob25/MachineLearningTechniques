@@ -15,6 +15,7 @@ class Institution:
     uri: str
     country: str
     country_code: str
+    rank: int = None
 
 
 def get_secret(name: str, file="config.ini"):
@@ -32,9 +33,17 @@ def load_institutions() -> List[Institution]:
         with open(f"Data/Scival/{item}", "r") as file:
             dic = json.load(file)
         # print(f"{dic['elsevier_id']} - {dic['name']}")
-        institution = Institution(dic['elsevier_id'], dic['name'], None, None, None)
+        institution = Institution(dic['elsevier_id'], dic['name'], None, None, None, rank=int(item.split("_")[0]))
         institutions.append(institution)
     return institutions
+
+
+def isnumber(x):
+    try:
+        float(x)
+        return True
+    except:
+        return False
 
 
 def camel_case_to_snake_case(name):

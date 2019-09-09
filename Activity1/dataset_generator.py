@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from common import camel_case_to_snake_case
+from common import camel_case_to_snake_case, load_institutions, isnumber
 
 
 def convert_initial_to_row(data: dict, rank: int, document_specific=False) -> List:
@@ -68,6 +68,126 @@ def get_headers(data: dict, document_type: str = None) -> List[str]:
             # headers.extend(get_header_by_year(composed_name, value, percentage=True))
     headers = [camel_case_to_snake_case(x).replace("__", "_") for x in headers]
     return headers
+
+
+def get_author_info() -> pd.DataFrame:
+    headers = ["top_500_authors_output_avg", "top_500_authors_output_annual_avg", "top_500_authors_hindex_avg",
+               "top_500_authors_citacions_avg", "top_500_authors_citacions_annual_avg",
+               "top_500_authors_citacions_per_publication_avg", "top_500_authors_citacions_per_publication_annual_avg"]
+    pattern = re.compile(r"\d{1,3}_.*")
+    result = pd.DataFrame(columns=headers)
+    dirs = [x for x in os.listdir("Data/Scopus") if pattern.match(x)]
+    for directory in dirs:
+        file_path = os.path.join("Data/Scopus", directory, "List_of_authors.csv")
+        a = pd.read_csv(file_path, header=9)
+        a = a.iloc[:-1, [1, 3, 4, 5, 6]]
+        a = a.mean()
+        serie = pd.Series(index=headers)
+        serie.name = int(directory.split("_")[0])
+        serie["top_500_authors_output_avg"] = a[0]
+        serie["top_500_authors_output_annual_avg"] = a[0] / 5
+        serie["top_500_authors_hindex_avg"] = a[4]
+        serie["top_500_authors_citacions_avg"] = a[1]
+        serie["top_500_authors_citacions_annual_avg"] = a[1] /5
+        serie["top_500_authors_citacions_per_publication_avg"] = a[2]
+        serie["top_500_authors_citacions_per_publication_annual_avg"] = a[0] / 5
+        result = result.append(serie)
+    left = [x for x in range(0, 200) if x not in result.index]
+    for i in left:
+        result = result.append(pd.Series(index=headers, name=i))
+    return result.sort_index()
+
+
+def get_funding_info() -> pd.DataFrame:
+    headers = ["grants_value", "grants_value_per_year", "grants_value_growth", "number_of_grants",
+               "number_of_grants_per_year", "number_of_grants_growth", "number_of_sponsors"]
+    pattern = re.compile(r"\d{1,3}_.*")
+    result = pd.DataFrame(columns=headers)
+    dirs = [x for x in os.listdir("Data/Scopus") if pattern.match(x)]
+    for directory in dirs:
+        index = int(directory.split("_")[0])
+        serie = pd.Series(index=headers)
+        serie.name = index
+        try:
+
+            file_path = os.path.join("Data/Scopus", directory, "Awarded_Grants_by_Funding_Body.csv")
+            a = pd.read_csv(file_path, header=6)
+            a = a.iloc[:-1, [2, 4, 5, 6]]
+            a = a[a.applymap(isnumber)]
+            a.iloc[:, 1] = pd.to_numeric(a.iloc[:, 1])
+            a.iloc[:, 3] = pd.to_numeric(a.iloc[:, 3])
+            summation = a.sum()
+            avg = a.mean()
+
+            serie["grants_value"] = summation[0]
+            serie["grants_value_per_year"] = summation[0] / 5
+            serie["grants_value_growth"] = avg[1]
+            serie["number_of_grants"] = summation[2]
+            serie["number_of_grants_per_year"] = summation[2] / 5
+            serie["number_of_grants_growth"] = avg[3]
+            serie["number_of_sponsors"] = a.shape[0]
+        except FileNotFoundError:
+            pass
+        finally:
+            result = result.append(serie)
+
+    left = [x for x in range(0, 200) if x not in result.index]
+    for i in left:
+        result = result.append(pd.Series(index=headers, name=i))
+    print(result.sort_index())
+    return result.sort_index()
+
+
+def fix_csv_folder_names():
+    institutions = load_institutions()
+    taken = []
+    names = [x.name for x in institutions]
+    dirs = os.listdir("Data/Scopus")
+    for directory in dirs:
+        pattern = re.compile(r"\d{1,3}_.*")
+        if pattern.match(directory):
+            print(f"{directory} already fixed")
+            taken.append([x for x in institutions if x.name in directory][0])
+            continue
+        if directory in names:
+            inst = [x for x in institutions if x.name == directory][0]
+            print(f"{inst.name} found with rank {inst.rank}")
+        else:
+            decision = "n"
+            skip = False
+            inst = None
+            while decision != "y":
+                print(f"{directory} not found")
+                left = [x for x in institutions if x not in taken]
+                print(left)
+                chosen = input("Choose the institution: ")
+                if chosen == "s":
+                    skip = True
+                    decision = "y"
+
+                else:
+                    inst = [x for x in institutions if x.rank == int(chosen)][0]
+                    print(f"Chosen {inst.name} with rank {inst.rank} for folder {directory}")
+                    decision = input("Sure? y/n ")
+            if skip:
+                continue
+        directory = os.path.join("Data/Scopus", directory)
+        os.rename(directory, f"Data/Scopus/{inst.rank}_{inst.name}")
+        taken.append(inst)
+
+
+def fix_csv_names():
+    dirs = os.listdir("Data/Scopus")
+    for directory in dirs:
+        directory = os.path.join("Data/Scopus", directory)
+        for file in os.listdir(directory):
+            try:
+                if "List_of_authors" in file:
+                    os.rename(os.path.join(directory, file), os.path.join(directory, "List_of_authors.csv"))
+                elif "Awarded_Grants_by_Funding_Body" in file:
+                    os.rename(os.path.join(directory, file), os.path.join(directory,                                                                        "Awarded_Grants_by_Funding_Body.csv"))
+            except FileExistsError:
+                pass
 
 
 def create_main_dataset() -> pd.DataFrame:
@@ -219,6 +339,9 @@ def main():
     dataset = drop_columns_from_before(dataset)
     dataset = expand_data(dataset)
 
+    authors = get_author_info()
+    funding = get_funding_info()
+
     document_specific_df = create_data_specific()
     document_specific_df = drop_columns_from_before(document_specific_df)
     document_specific_df = expand_data(document_specific_df)
@@ -227,10 +350,12 @@ def main():
     topics_dataset = create_topic_info()
     # print(topics_dataset)
 
-    total = pd.concat([dataset, document_specific_df, topics_dataset], axis=1)
+    total = pd.concat([dataset, authors, funding, document_specific_df, topics_dataset], axis=1)
     # print(total)
     write_arff_file(total, filename="Data/dataset.arff")
 
 
 if __name__ == '__main__':
     main()
+    # fix_csv_names()
+
