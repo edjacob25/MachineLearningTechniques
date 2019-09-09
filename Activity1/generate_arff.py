@@ -89,8 +89,33 @@ def create_main_dataset() -> pd.DataFrame:
             # print(len(row))
 
         rows.append(row)
-
     return pd.DataFrame(data=rows, columns=headers)
+
+
+def expand_data(data: pd.DataFrame) -> pd.DataFrame:
+    headers = data.columns
+    pattern = re.compile(".*_[0-9]{4}")
+    headers = [x for x in headers if pattern.match(x)]
+    items = {x.rsplit("_", 1)[0]: {} for x in headers}
+
+    for item in items:
+        selected = [x for x in headers if item in x]
+        insertion_index = list(data.columns).index(selected[-1]) + 1
+        selected_df = data.loc[:, selected]
+        # print(selected_df)
+        avg = selected_df.mean(axis=1)
+        avg.name = f"{item}_avg"
+        # print(avg)
+        change = selected_df.diff(axis=1).mean(axis=1)
+        change.name = f"{item}_growth"
+        # print(change)
+        acc = selected_df.diff(axis=1).diff(axis=1).mean(axis=1)
+        acc.name = f"{item}_growth_acc"
+        # print(acc)
+        data.insert(insertion_index, avg.name, avg)
+        data.insert(insertion_index + 1, change.name, change)
+        data.insert(insertion_index + 2, acc.name, acc)
+    return data
 
 
 def create_data_specific() -> pd.DataFrame:
@@ -182,23 +207,27 @@ def write_arff_file(dataset: pd.DataFrame, filename="dataset.arff", name="Univer
             file.write(f"{', '.join(items)}\n")
 
 
+def drop_columns_from_before(data: pd.DataFrame) -> pd.DataFrame:
+    pattern = re.compile(".*_(2009|2010|2011|2012|2013)")
+    columns_to_drop = [x for x in data.columns if pattern.match(x)]
+    return data.drop(columns=columns_to_drop)
+
+
 def main():
     dataset = create_main_dataset()
-    # print(dataset)
+    print(dataset)
+    dataset = drop_columns_from_before(dataset)
+    dataset = expand_data(dataset)
 
-    new_dataset = create_data_specific()
-    # print(new_dataset)
+    document_specific_df = create_data_specific()
+    document_specific_df = drop_columns_from_before(document_specific_df)
+    document_specific_df = expand_data(document_specific_df)
+    # print(document_specific_df)
 
     topics_dataset = create_topic_info()
     # print(topics_dataset)
 
-    total = pd.concat([dataset, new_dataset, topics_dataset], axis=1)
-    # print(total)
-
-    pattern = re.compile(".*_(2009|2010|2011|2012|2013)")
-    columns_to_drop = [x for x in total.columns if pattern.match(x)]
-    # print(columns_to_drop)
-    total = total.drop(columns=columns_to_drop)
+    total = pd.concat([dataset, document_specific_df, topics_dataset], axis=1)
     # print(total)
     write_arff_file(total)
 
