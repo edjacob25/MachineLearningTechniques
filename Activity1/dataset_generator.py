@@ -229,7 +229,7 @@ def main():
 
     total = pd.concat([dataset, document_specific_df, topics_dataset], axis=1)
     # print(total)
-    write_arff_file(total)
+    write_arff_file(total, filename="Data/dataset.arff")
 
 
 if __name__ == '__main__':
