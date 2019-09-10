@@ -196,5 +196,6 @@ def get_topics(api_key: str):
 
 if __name__ == '__main__':
     key = get_secret("elsevier_apikey")
-    # search_and_create_institutions(key)
+    search_and_create_institutions(key)
+    get_article_statistics(api_key=key)
     get_topics(api_key=key)
