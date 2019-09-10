@@ -56,7 +56,6 @@ def get_headers(data: dict, document_type: str = None) -> List[str]:
                         collab_type = value["collabType"].split(" ")[0].lower()
                         composed_name = f"{metric_name}_{collab_type}"
                 else:
-                    # print(metric_name)
                     threshold = value['threshold']
                     if document_type is None:
                         parts = metric_name.rsplit('_', 2)
@@ -88,7 +87,7 @@ def get_author_info() -> pd.DataFrame:
         serie["top_500_authors_output_annual_avg"] = a[0] / 5
         serie["top_500_authors_hindex_avg"] = a[4]
         serie["top_500_authors_citacions_avg"] = a[1]
-        serie["top_500_authors_citacions_annual_avg"] = a[1] /5
+        serie["top_500_authors_citacions_annual_avg"] = a[1] / 5
         serie["top_500_authors_citacions_per_publication_avg"] = a[2]
         serie["top_500_authors_citacions_per_publication_annual_avg"] = a[0] / 5
         result = result.append(serie)
@@ -242,11 +241,7 @@ def create_main_dataset() -> pd.DataFrame:
             rank = int(filename.split("_")[0]) + 1
             if headers is None:
                 headers = get_headers(data)
-                # print(headers)
-                # print(len(headers))
             row = convert_initial_to_row(data, rank)
-            # print(row)
-            # print(len(row))
 
         rows.append(row)
     return pd.DataFrame(data=rows, columns=headers)
@@ -262,16 +257,12 @@ def expand_data(data: pd.DataFrame) -> pd.DataFrame:
         selected = [x for x in headers if item in x]
         insertion_index = list(data.columns).index(selected[-1]) + 1
         selected_df = data.loc[:, selected]
-        # print(selected_df)
         avg = selected_df.mean(axis=1)
         avg.name = f"{item}_avg"
-        # print(avg)
         change = selected_df.diff(axis=1).mean(axis=1)
         change.name = f"{item}_growth"
-        # print(change)
         acc = selected_df.diff(axis=1).diff(axis=1).mean(axis=1)
         acc.name = f"{item}_growth_acc"
-        # print(acc)
         data.insert(insertion_index, avg.name, avg)
         data.insert(insertion_index + 1, change.name, change)
         data.insert(insertion_index + 2, acc.name, acc)
@@ -375,7 +366,6 @@ def drop_columns_from_before(data: pd.DataFrame) -> pd.DataFrame:
 
 def main():
     dataset = create_main_dataset()
-    print(dataset)
     dataset = drop_columns_from_before(dataset)
     dataset = expand_data(dataset)
 
@@ -386,10 +376,8 @@ def main():
     document_specific_df = create_data_specific()
     document_specific_df = drop_columns_from_before(document_specific_df)
     document_specific_df = expand_data(document_specific_df)
-    # print(document_specific_df)
 
     topics_dataset = create_topic_info()
-    # print(topics_dataset)
 
     total = pd.concat([dataset, authors, funding, collab_countries, document_specific_df, topics_dataset], axis=1)
     write_arff_file(total, filename="Data/dataset.arff")
@@ -398,4 +386,3 @@ def main():
 if __name__ == '__main__':
     main()
     # fix_csv_names()
-

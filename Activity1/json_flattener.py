@@ -1,10 +1,11 @@
 # First the flatten_json package needs to be installed.
-from json import load
+import re
 from csv import writer
+from json import load
 from os import listdir
+
 import pandas as pd
 from flatten_json import flatten
-import re
 
 # Read files with university data.
 lists = listdir("/Users/jesusllanogarcia/Desktop/Projecto/Scival")

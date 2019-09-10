@@ -1,6 +1,7 @@
 import configparser
 import os
 from dataclasses import dataclass
+
 from selenium import webdriver
 from selenium.common.exceptions import ElementClickInterceptedException
 

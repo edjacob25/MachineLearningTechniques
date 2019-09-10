@@ -1,9 +1,11 @@
 import json
 import os
-import requests
-from common import Institution, get_secret, load_institutions
 from time import sleep
 from typing import List
+
+import requests
+
+from common import Institution, get_secret, load_institutions
 
 
 def save_results(institution: Institution, rank: int, data: dict, directory="Scival", doc: str = None, topic=False):
