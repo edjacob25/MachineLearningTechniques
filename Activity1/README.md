@@ -12,6 +12,8 @@ virtual environment using pip
 ```
 pip install -r requirements.txt
 ``` 
+Rename the `config.example.ini` to `config.ini`, and substitute the values required for the program, which includes an apikey for Elsevier
+
 
 After that, you should run the file `api_downloader.py` as follows:
 ```
