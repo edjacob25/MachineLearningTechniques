@@ -134,7 +134,44 @@ def get_funding_info() -> pd.DataFrame:
     left = [x for x in range(0, 200) if x not in result.index]
     for i in left:
         result = result.append(pd.Series(index=headers, name=i))
-    print(result.sort_index())
+    return result.sort_index()
+
+
+def get_country_headers(dirs: List[str]) -> List[str]:
+    all_countries = {}
+    for directory in dirs:
+        file_path = os.path.join("Data/Scopus", directory, "countries.csv")
+        try:
+            a = pd.read_csv(file_path, header=3)
+            for country in a.iloc[:, 0]:
+                all_countries[country] = {}
+        except FileNotFoundError:
+            pass
+
+    return [f"collaboration_{x}" for x in all_countries]
+
+
+def get_country_info() -> pd.DataFrame:
+    pattern = re.compile(r"\d{1,3}_.*")
+    dirs = [x for x in os.listdir("Data/Scopus") if pattern.match(x)]
+    headers = get_country_headers(dirs) + ["biggest_country_collaborator"]
+
+    result = pd.DataFrame(columns=headers)
+    for directory in dirs:
+        serie = pd.Series(index=headers, name=int(directory.split("_")[0]))
+        try:
+            file_path = os.path.join("Data/Scopus", directory, "countries.csv")
+            a = pd.read_csv(file_path, header=3)
+            for country, quantity in zip(a.iloc[:, 0], a.iloc[:, 1]):
+                serie[f"collaboration_{country}"] = quantity
+            biggest_collaborator = a.iloc[a.iloc[:, 1].idxmax(), 0]
+            serie["biggest_country_collaborator"] = biggest_collaborator
+        except FileNotFoundError:
+            pass
+        result = result.append(serie)
+    left = [x for x in range(0, 200) if x not in result.index]
+    for i in left:
+        result = result.append(pd.Series(index=headers, name=i))
     return result.sort_index()
 
 
@@ -185,7 +222,10 @@ def fix_csv_names():
                 if "List_of_authors" in file:
                     os.rename(os.path.join(directory, file), os.path.join(directory, "List_of_authors.csv"))
                 elif "Awarded_Grants_by_Funding_Body" in file:
-                    os.rename(os.path.join(directory, file), os.path.join(directory,                                                                        "Awarded_Grants_by_Funding_Body.csv"))
+                    os.rename(os.path.join(directory, file), os.path.join(directory,
+                                                                          "Awarded_Grants_by_Funding_Body.csv"))
+                elif "Analyze-Country" in file:
+                    os.rename(os.path.join(directory, file), os.path.join(directory, "countries.csv"))
             except FileExistsError:
                 pass
 
@@ -341,6 +381,7 @@ def main():
 
     authors = get_author_info()
     funding = get_funding_info()
+    collab_countries = get_country_info()
 
     document_specific_df = create_data_specific()
     document_specific_df = drop_columns_from_before(document_specific_df)
@@ -350,8 +391,7 @@ def main():
     topics_dataset = create_topic_info()
     # print(topics_dataset)
 
-    total = pd.concat([dataset, authors, funding, document_specific_df, topics_dataset], axis=1)
-    # print(total)
+    total = pd.concat([dataset, authors, funding, collab_countries, document_specific_df, topics_dataset], axis=1)
     write_arff_file(total, filename="Data/dataset.arff")
 
 
