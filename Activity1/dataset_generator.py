@@ -136,6 +136,13 @@ def get_funding_info() -> pd.DataFrame:
     return result.sort_index()
 
 
+def normalize_country_name(name: str) -> str:
+    name = name.replace(' ', '_')
+    name = name.replace("'", '')
+    name = camel_case_to_snake_case(name)
+    return name.replace("__", "_")
+
+
 def get_country_headers(dirs: List[str]) -> List[str]:
     all_countries = {}
     for directory in dirs:
@@ -147,7 +154,7 @@ def get_country_headers(dirs: List[str]) -> List[str]:
         except FileNotFoundError:
             pass
 
-    return [f"collaboration_{x}" for x in all_countries]
+    return [f"collaboration_{normalize_country_name(x)}" for x in all_countries]
 
 
 def get_country_info() -> pd.DataFrame:
@@ -162,7 +169,7 @@ def get_country_info() -> pd.DataFrame:
             file_path = os.path.join("Data/Scopus", directory, "countries.csv")
             a = pd.read_csv(file_path, header=3)
             for country, quantity in zip(a.iloc[:, 0], a.iloc[:, 1]):
-                serie[f"collaboration_{country}"] = quantity
+                serie[f"collaboration_{normalize_country_name(country)}"] = quantity
             biggest_collaborator = a.iloc[a.iloc[:, 1].idxmax(), 0]
             serie["biggest_country_collaborator"] = biggest_collaborator
         except FileNotFoundError:
@@ -351,6 +358,11 @@ def write_arff_file(dataset: pd.DataFrame, filename="dataset.arff", name="Univer
 
             file.write(f"@ATTRIBUTE {header.ljust(max_len)} {column_type}\n")
         file.write("\n@DATA\n")
+
+        for _, column in dataset.iteritems():
+            if column.dtype == np.object:
+                pattern = re.compile(r"^(.*)$")
+                dataset[column.name] = column.str.replace(pattern, r'"\1"')
 
         for _, row in dataset.iterrows():
             items = [str(x) for x in row]
