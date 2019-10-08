@@ -1,4 +1,4 @@
-import math
+ import math
 import multiprocessing
 import os
 import subprocess
@@ -12,7 +12,7 @@ from common import get_config, format_time_difference
 
 
 def run_on_file(dataset_path: Path, java_mem: int = 5120,
-                folds: int = None, seed: str = None, metric: str = None, num_features: str = -1, num_trees: int = 150,
+                folds: int = None, seed: str = None, metric: str = None, bag_size: int = 100, num_features: str = -1, num_trees: int = 150,
                 max_depth: int = -1, min_obj_leaf: int = 2) -> Tuple[str, str]:
     if os.name is not "posix":
         separator = ";"
@@ -27,7 +27,10 @@ def run_on_file(dataset_path: Path, java_mem: int = 5120,
     command.append(str(dataset_path.resolve()))
     command.append('-miner')
     command.append(r'"PRFramework.Core.SupervisedClassifiers.EmergingPatterns.Miners.RandomForestMinerWithoutFiltering')
-    command.append('-bagSizePercent 100')
+
+    if bag_size:
+        command.append('-bagSizePercent')
+        command.append(str(bag_size))
 
     if num_features:
         command.append('-numFeatures')
@@ -38,7 +41,9 @@ def run_on_file(dataset_path: Path, java_mem: int = 5120,
         command.append(str(num_trees))
 
     command.append(
-        r'-builder "PRFramework.Core.SupervisedClassifiers.DecisionTrees.Builder.DecisionTreeBuilder -distributionEvaluator \\\"PRFramework.Core.SupervisedClassifiers.DecisionTrees.DistributionEvaluators.Hellinger \\\"')
+        r'-builder \"PRFramework.Core.SupervisedClassifiers.DecisionTrees.Builder.DecisionTreeBuilder '
+        r'-distributionEvaluator \\\"PRFramework.Core.SupervisedClassifiers.DecisionTrees.DistributionEvaluators'
+        r'.Hellinger \\\"')
 
     if max_depth:
         command.append('-maxDepth')
