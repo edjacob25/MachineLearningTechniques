@@ -1,0 +1,104 @@
+ import math
+import multiprocessing
+import os
+import subprocess
+import time
+from pathlib import Path
+from typing import Tuple
+
+from sty import fg
+
+from common import get_config, format_time_difference
+
+
+def run_on_file(dataset_path: Path, java_mem: int = 5120,
+                folds: int = None, seed: str = None, metric: str = None, bag_size: int = 100, num_features: str = -1, num_trees: int = 150,
+                max_depth: int = -1, min_obj_leaf: int = 2) -> Tuple[str, str]:
+    if os.name is not "posix":
+        separator = ";"
+    else:
+        separator = ":"
+    command = ["java", f"-Xmx{java_mem}m"]
+    java_classpath = f"{get_config('ROUTES', 'weka_jar')}{separator}{get_config('ROUTES', 'PBC')}"
+    command.append('-cp')
+    command.append(java_classpath)
+    command.append('weka.classifiers.trees.PBC4cip')
+    command.append('-t')
+    command.append(str(dataset_path.resolve()))
+    command.append('-miner')
+    command.append(r'"PRFramework.Core.SupervisedClassifiers.EmergingPatterns.Miners.RandomForestMinerWithoutFiltering')
+
+    if bag_size:
+        command.append('-bagSizePercent')
+        command.append(str(bag_size))
+
+    if num_features:
+        command.append('-numFeatures')
+        command.append(str(num_features))
+
+    if num_trees:
+        command.append('-numTrees')
+        command.append(str(num_trees))
+
+    command.append(
+        r'-builder \"PRFramework.Core.SupervisedClassifiers.DecisionTrees.Builder.DecisionTreeBuilder '
+        r'-distributionEvaluator \\\"PRFramework.Core.SupervisedClassifiers.DecisionTrees.DistributionEvaluators'
+        r'.Hellinger \\\"')
+
+    if max_depth:
+        command.append('-maxDepth')
+        command.append(str(max_depth))
+    command.append(r'\\\"')
+
+    if min_obj_leaf:
+        command.append(r'-minimalObjByLeaf \\\"')
+        command.append(str(min_obj_leaf))
+    command.append(r'-minimalSplitGain 1.0e-30\""')
+
+    if folds:
+        command.append("-x")
+        command.append(str(folds))
+
+    if seed:
+        command.append("-S")
+        command.append(seed)
+
+    if metric:
+        command.append("-metric")
+        command.append(metric)
+
+    start = time.time()
+    print("Command to run: ")
+    print(f"{fg.blue}{' '.join(command)}{fg.rs}")
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(result.args)
+    print(result.returncode)
+    end = time.time()
+    print(f"Took {fg.green}{format_time_difference(start, end)}{fg.rs} to run")
+    return result.stdout.decode("utf-8"), result.stderr.decode("utf-8")
+
+
+def main():
+    data_dir = Path(".") / 'Data'
+
+    initial_dir = data_dir / 'Initial'
+    results_dir = data_dir / 'Results'
+    if not data_dir.exists():
+        data_dir.mkdir()
+        initial_dir.mkdir()
+        results_dir.mkdir()
+
+    files = [x for x in initial_dir.iterdir() if x.is_file()]
+    for data_file in files:
+        weka_result, weka_error = run_on_file(data_file, num_features=5, num_trees=150,
+                                              max_depth=2, min_obj_leaf=3,)
+        res_file = results_dir / data_file.with_suffix(".txt").name
+        err_file = results_dir / data_file.with_suffix(".txt").name.replace(".t", "_error.t")
+        with res_file.open("w") as file:
+            file.write(weka_result)
+        with err_file.open("w") as file:
+            file.write(weka_error)
+
+
+if __name__ == '__main__':
+    main()
