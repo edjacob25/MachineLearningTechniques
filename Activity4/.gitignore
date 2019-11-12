@@ -2,6 +2,8 @@ config.ini
 .idea/
 .vscode/
 *.swp
+*.html
+*.zip
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
