@@ -1,0 +1,4 @@
+pandas>=0.25.0
+plotly>=4.2.1
+altair
+seaborn
